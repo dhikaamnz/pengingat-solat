@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pengingat Sholat 5 Waktu</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --night: #0D1B2A;
+    --deep: #1A2E45;
+    --mid: #1F3A54;
+    --gold: #C9A84C;
+    --gold-light: #E8C96A;
+    --cream: #F2E8D5;
+    --text: #EEE8DC;
+    --muted: #8DA5BB;
+    --green: #4CAF72;
+    --active-bg: rgba(201,168,76,0.12);
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--night);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 16px 60px;
+  }
+
+  /* ── SKY HEADER ── */
+  header {
+    width: 100%;
+    max-width: 680px;
+    text-align: center;
+    padding: 48px 0 32px;
+    position: relative;
+  }
+  .moon-icon {
+    font-size: 52px;
+    line-height: 1;
+    filter: drop-shadow(0 0 18px rgba(201,168,76,.5));
+    animation: float 4s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)}
+  }
+  .arabic-title {
+    font-family: 'Amiri', serif;
+    font-size: 2.2rem;
+    color: var(--gold-light);
+    margin: 12px 0 4px;
+    letter-spacing: .03em;
+  }
+  .sub-title {
+    font-size: .85rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .15em;
+    font-weight: 500;
+  }
+
+  /* ── CLOCK & DATE ── */
+  .clock-block {
+    width: 100%;
+    max-width: 680px;
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  #live-time {
+    font-size: 3.8rem;
+    font-weight: 300;
+    letter-spacing: .06em;
+    color: var(--cream);
+    line-height: 1;
+  }
+  #live-date {
+    margin-top: 6px;
+    font-size: .9rem;
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  /* ── LOCATION BAR ── */
+  .loc-bar {
+    width: 100%;
+    max-width: 680px;
+    background: var(--deep);
+    border: 1px solid rgba(201,168,76,.2);
+    border-radius: 14px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .loc-bar span { color: var(--muted); font-size: .85rem; }
+  .loc-bar strong { color: var(--gold-light); font-size: .9rem; }
+  .loc-bar button {
+    margin-left: auto;
+    background: rgba(201,168,76,.15);
+    border: 1px solid var(--gold);
+    color: var(--gold-light);
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: .8rem;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: background .2s;
+  }
+  .loc-bar button:hover { background: rgba(201,168,76,.28); }
+
+  /* ── NEXT PRAYER BANNER ── */
+  .next-banner {
+    width: 100%;
+    max-width: 680px;
+    background: linear-gradient(135deg, #1a3a28, #1a2e1f);
+    border: 1px solid rgba(76,175,114,.3);
+    border-radius: 16px;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    gap: 12px;
+  }
+  .next-banner .label { font-size: .75rem; color: var(--green); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 4px; }
+  .next-banner .name { font-family: 'Amiri', serif; font-size: 1.6rem; color: var(--cream); }
+  .next-banner .countdown { text-align: right; }
+  .next-banner .cd-label { font-size: .75rem; color: var(--muted); margin-bottom: 4px; }
+  .next-banner .cd-time { font-size: 1.8rem; font-weight: 600; color: var(--green); letter-spacing: .04em; }
+
+  /* ── PRAYER CARDS ── */
+  .cards {
+    width: 100%;
+    max-width: 680px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .card {
+    background: var(--deep);
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 14px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: border-color .25s, background .25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card.active {
+    background: var(--active-bg);
+    border-color: var(--gold);
+  }
+  .card.passed { opacity: .55; }
+  .card-icon { font-size: 1.8rem; width: 44px; text-align: center; flex-shrink: 0; }
+  .card-info { flex: 1; }
+  .card-name { font-family: 'Amiri', serif; font-size: 1.25rem; color: var(--cream); line-height: 1.1; }
+  .card-arabic { font-family: 'Amiri', serif; font-size: .9rem; color: var(--gold); direction: rtl; }
+  .card-time { font-size: 1.5rem; font-weight: 500; color: var(--text); letter-spacing: .04em; }
+  .card-alarm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .toggle {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    cursor: pointer;
+  }
+  .toggle input { display: none; }
+  .toggle-track {
+    position: absolute;
+    inset: 0;
+    background: var(--mid);
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.1);
+    transition: background .2s;
+  }
+  .toggle input:checked ~ .toggle-track { background: var(--gold); }
+  .toggle-knob {
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 18px; height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform .2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,.3);
+  }
+  .toggle input:checked ~ .toggle-knob { transform: translateX(20px); }
+  .toggle-label { font-size: .65rem; color: var(--muted); text-align: center; }
+  .active-dot {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: var(--gold);
+    border-radius: 4px 0 0 4px;
+  }
+
+  /* ── SETTINGS ── */
+  .settings-card {
+    width: 100%;
+    max-width: 680px;
+    background: var(--deep);
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 14px;
+    padding: 20px;
+    margin-top: 20px;
+  }
+  .settings-card h3 { font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 16px; }
+  .setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,.05);
+  }
+  .setting-row:last-child { border-bottom: none; }
+  .setting-row label { font-size: .9rem; color: var(--text); }
+  .setting-row select, .setting-row input[type=number] {
+    background: var(--mid);
+    border: 1px solid rgba(255,255,255,.1);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: .85rem;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+  }
+
+  /* ── NOTIFICATION TOAST ── */
+  .toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-80px);
+    background: linear-gradient(135deg, #1a3a28, #122d1e);
+    border: 1px solid var(--green);
+    border-radius: 16px;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    z-index: 1000;
+    min-width: 300px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.5);
+    transition: transform .4s cubic-bezier(.34,1.56,.64,1);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast-icon { font-size: 2rem; }
+  .toast-title { font-family: 'Amiri', serif; font-size: 1.3rem; color: var(--cream); }
+  .toast-body { font-size: .8rem; color: var(--muted); }
+  .toast-close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 1.2rem;
+    cursor: pointer;
+    line-height: 1;
+  }
+
+  /* ── AUDIO LABEL ── */
+  .audio-note {
+    width: 100%;
+    max-width: 680px;
+    text-align: center;
+    font-size: .78rem;
+    color: var(--muted);
+    margin-top: 16px;
+    line-height: 1.6;
+  }
+  .audio-note a { color: var(--gold); text-decoration: none; }
+
+  @media (max-width: 480px) {
+    #live-time { font-size: 2.8rem; }
+    .arabic-title { font-size: 1.7rem; }
+    .next-banner { flex-direction: column; text-align: center; }
+    .next-banner .countdown { text-align: center; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .moon-icon { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="moon-icon">🌙</div>
+  <div class="arabic-title">الصلاة خير من النوم</div>
+  <div class="sub-title">Pengingat Sholat 5 Waktu</div>
+</header>
+
+<div class="clock-block">
+  <div id="live-time">--:--:--</div>
+  <div id="live-date">--</div>
+</div>
+
+<div class="loc-bar">
+  <span>📍</span>
+  <strong id="loc-name">Mendeteksi lokasi…</strong>
+  <button onclick="getLocation()">Perbarui</button>
+</div>
+
+<div class="next-banner">
+  <div>
+    <div class="label">⏰ Sholat Berikutnya</div>
+    <div class="name" id="next-name">--</div>
+    <div style="font-size:.8rem;color:var(--muted);margin-top:2px" id="next-time-label">--</div>
+  </div>
+  <div class="countdown">
+    <div class="cd-label">Dalam</div>
+    <div class="cd-time" id="countdown">--:--</div>
+  </div>
+</div>
+
+<div class="cards" id="prayer-cards"></div>
+
+<div class="settings-card">
+  <h3>⚙️ Pengaturan</h3>
+  <div class="setting-row">
+    <label>Metode Hitung</label>
+    <select id="calc-method" onchange="recalculate()">
+      <option value="2">ISNA (Amerika)</option>
+      <option value="3">MWL (Eropa)</option>
+      <option value="4" selected>Umm Al-Qura (Mekah)</option>
+      <option value="5">Egypt</option>
+      <option value="18">Kuwait</option>
+      <option value="11">Malaysia / Singapore</option>
+    </select>
+  </div>
+  <div class="setting-row">
+    <label>Menit alarm sebelum waktu</label>
+    <input type="number" id="alarm-before" value="0" min="0" max="30" style="width:70px">
+  </div>
+  <div class="setting-row">
+    <label>Suara alarm</label>
+    <select id="alarm-sound">
+      <option value="adzan">Adzan (sintetis)</option>
+      <option value="beep">Beep</option>
+    </select>
+  </div>
+</div>
+
+<div class="audio-note">
+  Aktifkan izin <strong>notifikasi</strong> di browser agar pengingat muncul saat tab tertutup.<br>
+  Alarm berbunyi secara otomatis saat waktunya tiba.
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <div class="toast-icon">🕌</div>
+  <div>
+    <div class="toast-title" id="toast-title">Waktu Sholat</div>
+    <div class="toast-body" id="toast-body">Saatnya sholat</div>
+  </div>
+  <button class="toast-close" onclick="closeToast()">✕</button>
+</div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────
+const PRAYERS = [
+  { key:'fajr',    name:'Subuh',  arabic:'الفجر',   icon:'🌅', adzan:true },
+  { key:'sunrise', name:'Syuruq', arabic:'الشروق',  icon:'☀️', adzan:false },
+  { key:'dhuhr',   name:'Dzuhur', arabic:'الظهر',   icon:'🌤️', adzan:true },
+  { key:'asr',     name:'Ashar',  arabic:'العصر',   icon:'🌇', adzan:true },
+  { key:'maghrib', name:'Maghrib',arabic:'المغرب',  icon:'🌆', adzan:true },
+  { key:'isha',    name:'Isya',   arabic:'العشاء',  icon:'🌙', adzan:true },
+];
+
+let lat = -6.2088, lng = 106.8456; // default: Jakarta
+let prayerTimes = {};
+let alarmEnabled = { fajr:true, sunrise:false, dhuhr:true, asr:true, maghrib:true, isha:true };
+let alarmFired = {};
+let audioCtx = null;
+
+// ─── CLOCK ────────────────────────────────────────
+function tick() {
+  const now = new Date();
+  document.getElementById('live-time').textContent =
+    now.toLocaleTimeString('id-ID', { hour12: false });
+  document.getElementById('live-date').textContent =
+    now.toLocaleDateString('id-ID', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  updateNextPrayer(now);
+  checkAlarms(now);
+}
+setInterval(tick, 1000);
+tick();
+
+// ─── LOCATION ─────────────────────────────────────
+function getLocation() {
+  document.getElementById('loc-name').textContent = 'Mendeteksi…';
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      lat = pos.coords.latitude;
+      lng = pos.coords.longitude;
+      reverseGeocode(lat, lng);
+      recalculate();
+    }, () => {
+      document.getElementById('loc-name').textContent = 'Jakarta (default)';
+      recalculate();
+    });
+  } else {
+    document.getElementById('loc-name').textContent = 'Jakarta (default)';
+    recalculate();
+  }
+}
+
+async function reverseGeocode(la, lo) {
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${la}&lon=${lo}&format=json`);
+    const d = await r.json();
+    const city = d.address.city || d.address.town || d.address.county || 'Lokasi saya';
+    const country = d.address.country_code?.toUpperCase() || '';
+    document.getElementById('loc-name').textContent = `${city}, ${country}`;
+  } catch { document.getElementById('loc-name').textContent = `${la.toFixed(3)}, ${lo.toFixed(3)}`; }
+}
+
+// ─── PRAYER TIMES (Adhan.js via CDN) ─────────────
+function recalculate() {
+  const method = parseInt(document.getElementById('calc-method').value);
+  const today = new Date();
+  const coords = new adhan.Coordinates(lat, lng);
+  const date = new adhan.DateComponents(today.getFullYear(), today.getMonth()+1, today.getDate());
+  let params;
+  switch (method) {
+    case 2: params = adhan.CalculationMethod.NorthAmerica(); break;
+    case 3: params = adhan.CalculationMethod.MuslimWorldLeague(); break;
+    case 4: params = adhan.CalculationMethod.UmmAlQura(); break;
+    case 5: params = adhan.CalculationMethod.Egyptian(); break;
+    case 18: params = adhan.CalculationMethod.Kuwait(); break;
+    case 11: params = adhan.CalculationMethod.Singapore(); break;
+    default: params = adhan.CalculationMethod.UmmAlQura();
+  }
+  const pt = new adhan.PrayerTimes(coords, date, params);
+  prayerTimes = {
+    fajr: pt.fajr,
+    sunrise: pt.sunrise,
+    dhuhr: pt.dhuhr,
+    asr: pt.asr,
+    maghrib: pt.maghrib,
+    isha: pt.isha,
+  };
+  alarmFired = {};
+  renderCards();
+  updateNextPrayer(new Date());
+}
+
+// ─── RENDER CARDS ─────────────────────────────────
+function renderCards() {
+  const container = document.getElementById('prayer-cards');
+  const now = new Date();
+  container.innerHTML = '';
+  PRAYERS.forEach(p => {
+    const t = prayerTimes[p.key];
+    if (!t) return;
+    const passed = t < now;
+    const isNext = nextPrayerKey() === p.key;
+    const timeStr = t.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit', hour12:false });
+
+    const card = document.createElement('div');
+    card.className = `card${isNext ? ' active' : ''}${passed && !isNext ? ' passed' : ''}`;
+    card.id = `card-${p.key}`;
+
+    card.innerHTML = `
+      ${isNext ? '<div class="active-dot"></div>' : ''}
+      <div class="card-icon">${p.icon}</div>
+      <div class="card-info">
+        <div class="card-name">${p.name}</div>
+        <div class="card-arabic">${p.arabic}</div>
+      </div>
+      <div class="card-time">${timeStr}</div>
+      <div class="card-alarm">
+        <label class="toggle">
+          <input type="checkbox" id="al-${p.key}" ${alarmEnabled[p.key] ? 'checked' : ''} onchange="toggleAlarm('${p.key}', this.checked)">
+          <div class="toggle-track"></div>
+          <div class="toggle-knob"></div>
+        </label>
+        <span class="toggle-label">Alarm</span>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function toggleAlarm(key, val) {
+  alarmEnabled[key] = val;
+}
+
+// ─── NEXT PRAYER ──────────────────────────────────
+function nextPrayerKey() {
+  const now = new Date();
+  for (const p of PRAYERS) {
+    if (prayerTimes[p.key] && prayerTimes[p.key] > now) return p.key;
+  }
+  return PRAYERS[0].key; // tomorrow fajr
+}
+
+function updateNextPrayer(now) {
+  const key = nextPrayerKey();
+  const p = PRAYERS.find(x => x.key === key);
+  const t = prayerTimes[key];
+  if (!p || !t) return;
+
+  document.getElementById('next-name').textContent = p.name;
+  document.getElementById('next-time-label').textContent =
+    t.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit', hour12:false });
+
+  const diff = Math.max(0, t - now);
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  document.getElementById('countdown').textContent =
+    h > 0 ? `${h}j ${String(m).padStart(2,'0')}m` : `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+// ─── ALARM CHECK ──────────────────────────────────
+function checkAlarms(now) {
+  const before = parseInt(document.getElementById('alarm-before').value || 0) * 60000;
+  PRAYERS.forEach(p => {
+    const t = prayerTimes[p.key];
+    if (!t || !alarmEnabled[p.key]) return;
+    const fireAt = new Date(t.getTime() - before);
+    const diff = now - fireAt;
+    if (diff >= 0 && diff < 60000 && !alarmFired[p.key]) {
+      alarmFired[p.key] = true;
+      triggerAlarm(p);
+    }
+  });
+}
+
+// ─── AUDIO ────────────────────────────────────────
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playBeep(freq, dur, delay=0, vol=0.4) {
+  const ctx = getAudioCtx();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.frequency.value = freq;
+  osc.type = 'sine';
+  gain.gain.setValueAtTime(0, ctx.currentTime + delay);
+  gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + delay + 0.05);
+  gain.gain.setValueAtTime(vol, ctx.currentTime + delay + dur - 0.05);
+  gain.gain.linearRampToValueAtTime(0, ctx.currentTime + delay + dur);
+  osc.start(ctx.currentTime + delay);
+  osc.stop(ctx.currentTime + delay + dur);
+}
+
+function playAdzan() {
+  // Simple adzan-like melodic tones
+  const notes = [
+    [392,0.6,0],[440,0.4,.7],[494,0.5,1.2],[440,0.8,1.8],[392,0.6,2.7],
+    [392,0.5,3.5],[330,0.7,4.1],[349,0.9,4.9],[392,0.6,5.9],[330,1.2,6.6],
+    [294,0.5,8.0],[330,0.5,8.6],[349,0.8,9.2],[330,1.5,10.1],
+  ];
+  notes.forEach(([f,d,t]) => playBeep(f, d, t, 0.35));
+}
+
+function playAlarmSound() {
+  const type = document.getElementById('alarm-sound').value;
+  if (type === 'adzan') playAdzan();
+  else {
+    playBeep(880, 0.2, 0);
+    playBeep(880, 0.2, 0.3);
+    playBeep(1100, 0.4, 0.7);
+  }
+}
+
+// ─── TRIGGER ──────────────────────────────────────
+function triggerAlarm(p) {
+  playAlarmSound();
+  showToast(p.name, `Waktunya sholat ${p.name} (${p.arabic})`);
+  if (Notification.permission === 'granted') {
+    new Notification(`🕌 Waktu Sholat ${p.name}`, {
+      body: `Saatnya menunaikan sholat ${p.name}`,
+      icon: 'https://cdn.jsdelivr.net/npm/twemoji@14/assets/svg/1f54c.svg',
+    });
+  }
+  renderCards();
+}
+
+// ─── TOAST ────────────────────────────────────────
+let toastTimer;
+function showToast(title, body) {
+  document.getElementById('toast-title').textContent = title;
+  document.getElementById('toast-body').textContent = body;
+  const toast = document.getElementById('toast');
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 8000);
+}
+function closeToast() {
+  document.getElementById('toast').classList.remove('show');
+}
+
+// ─── NOTIFICATION PERMISSION ──────────────────────
+if (Notification && Notification.permission === 'default') {
+  setTimeout(() => Notification.requestPermission(), 2000);
+}
+
+// ─── LOAD ADHAN.JS ────────────────────────────────
+const script = document.createElement('script');
+script.src = 'https://cdnjs.cloudflare.com/ajax/libs/adhan/4.4.3/adhan.min.js';
+script.onload = () => getLocation();
+script.onerror = () => {
+  // Fallback: hardcoded Jakarta times
+  const now = new Date();
+  const d = (h,m) => { const x=new Date(now); x.setHours(h,m,0,0); return x; };
+  prayerTimes = { fajr:d(4,30), sunrise:d(5,55), dhuhr:d(11,55), asr:d(15,15), maghrib:d(17,55), isha:d(19,5) };
+  document.getElementById('loc-name').textContent = 'Jakarta (offline)';
+  renderCards(); updateNextPrayer(new Date());
+};
+document.head.appendChild(script);
+</script>
+</body>
+</html>
